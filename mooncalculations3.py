@@ -5,7 +5,7 @@
 import calendar
 import math
 import datetime
-import turtle
+#import turtle
 #import numpy
 
 #Constants
