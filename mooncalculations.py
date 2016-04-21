@@ -16,7 +16,7 @@ observer_longitude = -6.2597 ##negative means W, positive E
 import calendar
 import math
 import datetime
-import turtle
+#import turtle
 #import numpy
 
 #Constants
