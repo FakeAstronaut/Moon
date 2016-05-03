@@ -5,6 +5,7 @@
 import calendar
 import math
 import datetime
+import leapseconds #from https://github.com/eggert/tz/blob/master/leap-seconds.list
 #import turtle
 #import numpy
 
@@ -35,7 +36,14 @@ def adjustrange2(x):
 	elif x < 0:
 		x += 24*(abs(int(x/24))+1)
 	return x	
-
+	
+def adjustrange3(x):
+	if x > 180:
+		x -= 180*int(x/180)
+	elif x < 0:
+		x += 180*(abs(int(x/360))+1)
+	return x
+	
 def decdeg2dms(dd):
 	negative = dd < 0
 	dd = abs(dd)
@@ -49,10 +57,42 @@ def decdeg2dms(dd):
 		else:
 			seconds = -seconds
 	return (degrees,minutes,seconds)
+	
+def adjust_by_quadrant(x,y,tan_yx):
+##		Ecliptic to equatorial coordinate conversion, pg 40
+	if (x < 0) and (y > 0):
+		if tan_yx > 180:
+			tan_yx -= 180*int(tan_yx/180)
+		elif tan_yx < 90:
+			tan_yx += 180*(abs(int(tan_yx/180))+1)
+	elif (x > 0) and (y > 0):
+		if tan_yx > 90:
+			tan_yx -= 180*int(tan_yx/180)
+		elif tan_yx < 0:
+			tan_yx += 180*(abs(int(tan_yx/180))+1)
+	elif (x > 0) and (y < 0):
+		if tan_yx > 0:
+			tan_yx -= 180*int(tan_yx/180)
+		elif tan_yx < -90:
+			tan_yx += 180*(abs(int(tan_yx/180))+1)
+	elif (x < 0) and (y < 0):
+		if tan_yx > -90:
+			tan_yx -= 180*int(tan_yx/180)
+		elif tan_yx < -180:
+			tan_yx += 180*(abs(int(tan_yx/180))+1)	
+	return tan_yx
+	
+def dayfraction_to_hms(x):
+	x = abs(x)
+	hours = int(x * 24)
+	minutes = int(((time_as_frac_of_day * 24) - hours )* 60)
+	seconds = int((((time_as_frac_of_day * 24) - hours )* 60 - minutes) * 60)
+	return (hours,minutes,seconds)
 ##########
 def calculate_moon_position1(day,month,year,timeH,timeM,timeS):
 	print "Calculated with set date: "+str(day)+"/"+str(month)+"/"+str(year)+"/ at " + str(timeH)+":"+str(timeM)+":"+str(timeS)+".\n"
 	
+	timeS+= 32.184 + leapseconds.dTAI_UTC_from_utc(datetime.datetime(year,month,day,timeH,timeM,timeS)).seconds
 	time_as_frac_of_day = ((timeS/60.0 + timeM)/60.0 + timeH)/24.0					## Step 1 - pg 144 ############## 
 	daystotal=0
 	for monthdays in daysinmonth[:month-1]:

@@ -2,88 +2,91 @@
 
 <MoonBall>:
 	size: 65, 65 
+	#size_hint: 0.6, 0.6
 	canvas:
 		Ellipse:
 			pos:  self.pos
 			size: self.size   
 			texture: self.moon_texture.texture
-
+		PushMatrix
+		Rotate:
+			angle: self.moon_limb_rotation
+			origin: self.center
+		Ellipse:
+			pos: self.pos
+			size: self.size  
+			texture: self.moon_darkshade.texture
+		PopMatrix
 <MoonAct>:
 	ball: moon_ball
+	picker: datepicker
+	locspin: locationspin
 	
 	Label:
 		font_size: 20 
-		center_x: root.width / 4
+		center_x: root.width / 4.0
+		center_y: root.height * 9.0/10.0
 		top: root.top - 50
 		text: root.label1 
-        
-	Label:
-		font_size: 20  
-		center_x: root.width * 3 / 4
-		top: root.top - 50
-		text: root.label2
 		
 	Label:
-		center_x: root.width * 3.25 / 4
-		center_y: root.height * 2.35/10
+		font_size: 20  
+		center_x: root.width * 3.0 / 4
+		center_y: root.height * 9.0/10.0
+		top: root.top - 50
+		text: root.label3
+	Label:
+		font_size: 20 
+		center_x: root.width / 4.0
+		center_y: root.height * 8.5/10.0
+		top: root.top - 50
+		text: root.label2 
+		
+	Label:
+		font_size: 20  
+		center_x: root.width * 3 / 4.0
+		center_y: root.height * 8.5/10.0
+		top: root.top - 50
+		text: root.label4
+
+	Label:
+		font_size: 20  
+		center_x: root.width * 3 / 4.0
+		center_y: root.height * 8.0/10.0
+		top: root.top - 50
+		text: root.label5
+
+		
+	Label:
+		center_x: root.width * 3 / 4.0
+		center_y: root.height * 0.35/10.0
 		id: lbl0
-		text: "Observer"  	
+		text: "Observer"
     
 	MoonBall:
 		id: moon_ball
 		center: self.parent.center
 	
 	DatetimePicker:
+		#print self.get_datetime()
 		#density: '2pt'
 		#top: root.top - 60
 		size: 480, 120
 		#font_size: 5  
 		id: datepicker
 		#self.font_size: 5
-		
-	GridLayout:
-		cols: 1
-		rows: 1
+		#on_touch_up:
+			#if not self.in_motion: print 'current value is %s ' % (self.get_datetime())
+
+	Spinner:
+		id: locationspin
 		center_x: root.width * 3 / 4
 		center_y: root.height /10
-		
-		TextInput:
-			initial_text: True
-			text: "Enter here"
-			on_text: 
-				self.text = self.text[-1] if self.initial_text else self.text 
-				self.initial_text = False
-			multiline: False
-			on_text_validate:
-				print 'User pressed enter in %s and current value is %s ' % (self, self.text)
-				lbl.text = self.text
-		Label:
-			center_x: root.width * 3 / 4
-			center_y: root.height * 2/10
-			id: lbl
-			text: "Latitude"  	
+		text: "Location"
+		values: ("Dublin","London","New York","Tokyo")
+		size: 100,44
 			
-	GridLayout:
-		cols: 1
-		rows: 1
-		center_x: root.width * 3.5 / 4
-		center_y: root.height /10
-		
-		TextInput:
-			initial_text: True
-			text: "Enter here"
-			on_text: 
-				self.text = self.text[-1] if self.initial_text else self.text 
-				self.initial_text = False
-			multiline: False
-			on_text_validate:
-				print 'User pressed enter in %s and current value is %s ' % (self, self.text)
-				lbl2.text = self.text
-		Label:
-			center_x: root.width * 3.5 / 4
-			center_y: root.height * 2/10
-			id: lbl2
-			text: "Longitude"  	
+	
 		
 		
 		

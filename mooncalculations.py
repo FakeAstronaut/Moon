@@ -2,12 +2,12 @@
 
 #Position of the moon
 #######
-day=28
+day=27
 month=2
-year=2016
-timeH=18
+year=2021
+timeH=16
 timeM=0
-timeS=50
+timeS=0
 
 observer_latitude = 53.3478 ## N or S
 observer_longitude = -6.2597 ##negative means W, positive E
@@ -16,6 +16,7 @@ observer_longitude = -6.2597 ##negative means W, positive E
 import calendar
 import math
 import datetime
+import leapseconds #from https://github.com/eggert/tz/blob/master/leap-seconds.list
 #import turtle
 #import numpy
 
@@ -46,7 +47,38 @@ def adjustrange2(x):
 	elif x < 0:
 		x += 24*(abs(int(x/24))+1)
 	return x	
+	
+def adjustrange3(x):
+	if x > 180:
+		x -= 180*int(x/180)
+	elif x < 0:
+		x += 180*(abs(int(x/360))+1)
+	return x
 
+def adjust_by_quadrant(x,y,tan_yx):
+##		Ecliptic to equatorial coordinate conversion, pg 40
+	if (x < 0) and (y > 0):
+		if tan_yx > 180:
+			tan_yx -= 180*int(tan_yx/180)
+		elif tan_yx < 90:
+			tan_yx += 180*(abs(int(tan_yx/180))+1)
+	elif (x > 0) and (y > 0):
+		if tan_yx > 90:
+			tan_yx -= 180*int(tan_yx/180)
+		elif tan_yx < 0:
+			tan_yx += 180*(abs(int(tan_yx/180))+1)
+	elif (x > 0) and (y < 0):
+		if tan_yx > 0:
+			tan_yx -= 180*int(tan_yx/180)
+		elif tan_yx < -90:
+			tan_yx += 180*(abs(int(tan_yx/180))+1)
+	elif (x < 0) and (y < 0):
+		if tan_yx > -90:
+			tan_yx -= 180*int(tan_yx/180)
+		elif tan_yx < -180:
+			tan_yx += 180*(abs(int(tan_yx/180))+1)	
+	return tan_yx
+	
 def decdeg2dms(dd):
 	negative = dd < 0
 	dd = abs(dd)
@@ -60,11 +92,19 @@ def decdeg2dms(dd):
 		else:
 			seconds = -seconds
 	return (degrees,minutes,seconds)
+	
+def dayfraction_to_hms(x):
+	x = abs(x)
+	hours = int(x * 24)
+	minutes = int(((time_as_frac_of_day * 24) - hours )* 60)
+	seconds = int((((time_as_frac_of_day * 24) - hours )* 60 - minutes) * 60)
+	return (hours,minutes,seconds)
 ##########
 
 print "Calculated with set date: "+str(day)+"/"+str(month)+"/"+str(year)+"/ at " + str(timeH)+":"+str(timeM)+":"+str(timeS)+".\n"
 
 ## Step 1 - pg 144 ###############
+timeS+= 32.184 + leapseconds.dTAI_UTC_from_utc(datetime.datetime(year,month,day,timeH,timeM,timeS)).seconds #converting to Terrestrial Dynamic Time
 time_as_frac_of_day = ((timeS/60.0 + timeM)/60.0 + timeH)/24.0
 
 daystotal=0
@@ -180,26 +220,7 @@ x = math.cos(math.radians(true_longitude - N_prime))
 tan_yx = math.degrees(math.atan(y/x))
 #tan_yx = math.degrees(numpy.arctan(y/x))
 ##		Ecliptic to equatorial coordinate conversion, pg 40
-if (x < 0) and (y > 0):
-	if tan_yx > 180:
-		tan_yx -= 180*int(tan_yx/180)
-	elif tan_yx < 90:
-		tan_yx += 180*(abs(int(tan_yx/180))+1)
-elif (x > 0) and (y > 0):
-	if tan_yx > 90:
-		tan_yx -= 180*int(tan_yx/180)
-	elif tan_yx < 0:
-		tan_yx += 180*(abs(int(tan_yx/180))+1)
-elif (x > 0) and (y < 0):
-	if tan_yx > 0:
-		tan_yx -= 180*int(tan_yx/180)
-	elif tan_yx < -90:
-		tan_yx += 180*(abs(int(tan_yx/180))+1)
-elif (x < 0) and (y < 0):
-	if tan_yx > -90:
-		tan_yx -= 180*int(tan_yx/180)
-	elif tan_yx < -180:
-		tan_yx += 180*(abs(int(tan_yx/180))+1)
+tan_yx = adjust_by_quadrant(x,y,tan_yx)
 
 #print "Step 18 - tan_yx =",tan_yx
 ######################################
@@ -271,8 +292,8 @@ mean_obliquity_of_ecliptic = 23.439292 - change_in_mean_obliquity_of_ecliptic
 ##
 ## Formulas on pg 40
 alpha_m = math.degrees(math.atan((math.sin(math.radians(lambda_m)) * math.cos(math.radians(mean_obliquity_of_ecliptic)) - math.tan(math.radians(beta_m)) * math.sin(math.radians(mean_obliquity_of_ecliptic)))/math.cos(math.radians(lambda_m))))
-alpha_m = adjustrange1(alpha_m)/15.0
-alpha_m2 = decdeg2dms(alpha_m)
+alpha_m = adjustrange1(alpha_m)
+alpha_m2 = decdeg2dms(alpha_m/15.0)
 print "--------------------------------------------------\n"
 print "Right ascension, alpha_m = {hours}h {minutes}m {seconds:.2f}s".format(hours=int(alpha_m2[0]), minutes=int(alpha_m2[1]), seconds=alpha_m2[2])
 
@@ -343,8 +364,17 @@ phase_of_moon = 0.5 * (1 - math.cos(math.radians(age_of_moon)))
 print "--------------------------------------------------\n"
 print "The phase of the moon, as a percentage: "+str(round(phase_of_moon * 100,3))+"%.\n"
 ###################################################################
+##the position angle of the moon bright limb pg149
 
+alpha_s = math.degrees(math.atan((math.sin(math.radians(SunGeometricEclipticLongitude)) * math.cos(math.radians(mean_obliquity_of_ecliptic)) - math.tan(math.radians(0)) * math.sin(math.radians(mean_obliquity_of_ecliptic)))/math.cos(math.radians(SunGeometricEclipticLongitude))))
+delta_s = math.degrees(math.asin(math.sin(math.radians(0)) * math.cos(math.radians(mean_obliquity_of_ecliptic)) + math.cos(math.radians(0)) * math.sin(math.radians(mean_obliquity_of_ecliptic)) * math.sin(math.radians(SunGeometricEclipticLongitude))))
 
+y_limb = math.cos(math.radians(delta_s)) * math.sin(math.radians(alpha_s - alpha_m))
+x_limb =  math.cos(math.radians(delta_m)) * math.sin(math.radians(delta_s)) - math.sin(math.radians(delta_m)) * math.cos(math.radians(delta_s)) * math.cos(math.radians(alpha_s - alpha_m))
+Moon_limb_rotation = math.degrees(math.atan( (y_limb)/(x_limb)))
 
+Moon_limb_rotation2 = adjust_by_quadrant(x_limb,y_limb,Moon_limb_rotation)
+
+print "alpha_sun:",str(alpha_s), "delta_sun",str(delta_s),"\nalpha_moon",str(alpha_m),"delta_moon",str(delta_m),"\nMoon limb rotation",str(Moon_limb_rotation2)
 
 #raw_input("\nPress enter to exit.")
