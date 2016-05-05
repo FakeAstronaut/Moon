@@ -7,7 +7,7 @@
 import calendar
 import math
 import datetime
-import leapseconds #from https://github.com/eggert/tz/blob/master/leap-seconds.list
+import leapseconds #from https://github.com/eggert/tz/blob/master/leap-seconds.list   Line 80 in this file if on Windows must be set to True: use_fallback=True 
 #import turtle
 #import numpy
 
