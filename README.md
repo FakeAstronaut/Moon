@@ -6,4 +6,4 @@ Dependencies :
  * Kivy https://kivy.org/#download
  * DateTimePicker https://github.com/kivy-garden/garden.datetimepicker
  * leapseconds https://github.com/eggert/tz/blob/master/leap-seconds.list  
-+ Line 80 in this file if on Windows must be set to True: use_fallback=True 
++ If on Windows or an error, at line 80 (in this file) "use_fallback"  must be set to "True" : use_fallback=True 
