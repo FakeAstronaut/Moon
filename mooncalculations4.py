@@ -71,6 +71,7 @@ def adjust_by_quadrant(x,y,tan_yx):
 	return tan_yx
 	
 def decdeg2dms(dd):
+	#from http://stackoverflow.com/questions/2579535/how-to-convert-dd-to-dms-in-python/12737895#12737895
 	negative = dd < 0
 	dd = abs(dd)
 	minutes,seconds = divmod(dd*3600,60)
