@@ -6,7 +6,6 @@ Runs on Linux, Windows, OS X, Android, iOS, and Raspberry Pi. You can run the sa
 
 The position of the moon is represented by how far left(East) or right(West) it appears in the window, a central position corresponds to the moon placed directly South of the observer. The height represents the altitude.
 
-Demo video https://streamable.com/nt2cx
 
 ---------------------------------------------------------------------
 Change to tab indent 4spaces to read comments clearly
